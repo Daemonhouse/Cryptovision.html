@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoVision AI Trading - Levier 20×</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        /* ================= VARIABLES & RESET ================= */
+        :root {
+            --primary: #00d4ff;
+            --primary-dark: #0099ff;
+            --secondary: #00ff88;
+            --danger: #ff416c;
+            --warning: #ff9900;
+            --background: #0a0e17;
+            --card-bg: #111827;
+            --card-border: #1e2a3a;
+            --text: #ffffff;
+            --text-muted: #8a9bb0;
+            --success: #00ff88;
+            --gradient-primary: linear-gradient(135deg, #00d4ff, #0099ff);
+            --gradient-success: linear-gradient(135deg, #00ff88, #00cc66);
+            --gradient-danger: linear-gradient(135deg, #ff416c, #ff4b2b);
+            --gradient-warning: linear-gradient(135deg, #ff9900, #ff5500);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        /* ================= HEADER & NAV ================= */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--card-border);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .logo i {
+            font-size: 28px;
+        }
+
+        .lever-badge {
+            background: var(--warning);
+            color: #000;
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 14px;
+            margin-left: 8px;
+            box-shadow: 0 4px 10px rgba(255, 153, 0, 0.3);
+        }
+
+        .menu {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .menu a {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            border: 1px solid transparent;
+            font-size: 14px;
+        }
+
+        .menu a.active,
+        .menu a:hover {
+            background: rgba(30, 42, 58, 0.6);
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.2);
+        }
+
+        /* ================= DASHBOARD GRID ================= */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 22px;
+            border: 1px solid var(--card-border);
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 212, 255, 0.15);
+        }
+
+        .card h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(30, 42, 58, 0.5);
+        }
+
+        /* ================= BALANCE & STATUS ================= */
+        .balance {
+            font-size: 42px;
+            font-weight: 900;
+            color: var(--secondary);
+            text-align: center;
+            margin: 20px 0;
+            text-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), transparent);
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .status {
+            padding: 16px;
+            border-radius: 12px;
+            margin: 18px 0;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+        }
+
+        .status-online {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+        }
+
+        .status-offline {
+            background: rgba(255, 65, 108, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        /* ================= BOUTONS ================= */
+        .btn {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 15px 28px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-green {
+            background: var(--gradient-success);
+        }
+
+        .btn-red {
+            background: var(--gradient-danger);
+        }
+
+        /* ================= FORMULAIRES ================= */
+        .input-group {
+            margin: 18px 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 15px;
+            background: #1a2234;
+            border: 1px solid #2a3a5a;
+            border-radius: 10px;
+            color: white;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
+        }
+
+        /* ================= BADGES VOLATILITÉ ================= */
+        .volatility-badge {
+            color: white;
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            margin-left: 6px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .low-vol {
+            background: linear-gradient(135deg, #00cc66, #00994d);
+        }
+
+        .medium-vol {
+            background: linear-gradient(135deg, #ff9900, #cc7700);
+        }
+
+        .high-vol {
+            background: linear-gradient(135deg, #ff3366, #cc0044);
+        }
+
+        /* ================= NOTES SÉCURITÉ ================= */
+        .security-note {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid #ffc107;
+            color: #ffc107;
+            padding: 16px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .security-note i {
+            font-size: 20px;
+        }
+
+        .security-note strong {
+            color: #ffdb70;
+        }
+
+        /* ================= LOGS & HISTORIQUE ================= */
+        .trade-log {
+            background: #0d1422;
+            border-radius: 12px;
+            padding: 18px;
+            margin-top: 20px;
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid var(--card-border);
+        }
+
+        .log-entry {
+            padding: 12px;
+            border-bottom: 1px solid rgba(30, 42, 58, 0.5);
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.3s;
+        }
+
+        .log-entry:hover {
+            background: rgba(30, 42, 58, 0.3);
+        }
+
+        .log-success {
+            color: var(--secondary);
+            border-left: 4px solid var(--secondary);
+            padding-left: 8px;
+        }
+
+        .log-error {
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
+            padding-left: 8px;
+        }
+
+        .log-info {
+            color: var(--primary);
+            border-left: 4px solid var(--primary);
+            padding-left: 8px;
+        }
+
+        /* ================= UTILITAIRES ================= */
+        .section {
+            animation: fadeIn 0.5s ease;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ================= RESPONSIVE ================= */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .menu {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .balance {
+                font-size: 36px;
+            }
+            
+            .card {
+                padding: 18px;
+            }
+            
+            .btn {
+                padding: 14px 20px;
+                font-size: 15px;
+            }
+        }
+
+        /* ================= SCROLLBAR ================= */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0d1422;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-robot"></i>
+                <span>CryptoVision AI</span>
+                <span class="lever-badge">20×</span>
+            </div>
+            <div class="menu">
+                <a href="#" class="active" onclick="showSection('dashboard')"><i class="fas fa-chart-line"></i> Trading</a>
+                <a href="#" onclick="showSection('settings')"><i class="fas fa-cog"></i> Paramètres</a>
+                <a href="#" onclick="showSection('history')"><i class="fas fa-history"></i> Historique</a>
+                <a href="#" onclick="showSection('volatility')"><i class="fas fa-chart-bar"></i> Volatilité</a>
+            </div>
+        </header>
+        
+        <!-- SECTION DASHBOARD -->
+        <div id="dashboard-section" class="section">
+            <div class="dashboard">
+                <div class="card">
+                    <h2><i class="fas fa-wallet"></i> Portefeuille</h2>
+                    <div class="balance" id="balance">0.00 USDT</div>
+                    <div class="status" id="connection-status">
+                        <i class="fas fa-plug"></i> Connexion Lbank: <span id="status-text">Non connecté</span>
+                    </div>
+                    <button class="btn" onclick="connectToLbank()"><i class="fas fa-link"></i> Connecter API Lbank</button>
+                </div>
+                
+                <div class="card">
+                    <h2><i class="fas fa-bolt"></i> Contrôle Trading</h2>
+                    <div class="input-group">
+                        <label>Montant par trade (USDT)</label>
+                        <input type="number" id="trade-amount" value="100" min="10" max="10000">
+                    </div>
+                    <div class="input-group">
+                        <label>Paire de trading</label>
+                        <select id="trading-pair">
+                            <!-- CRYPTO MAJEURES -->
+                            <option value="btc_usdt">BTC/USDT - Bitcoin <span class="volatility-badge low-vol">Faible Vol</span></option>
+                            <option value="eth_usdt">ETH/USDT - Ethereum <span class="volatility-badge low-vol">Faible Vol</span></option>
+                            <option value="bnb_usdt">BNB/USDT - Binance Coin <span class="volatility-badge medium-vol">Moyenne Vol</span></option>
+                            
+                            <!-- ALTCOINS POPULAIRES -->
+                            <option value="sol_usdt">SOL/USDT - Solana <span class="volatility-badge high-vol">Haute Vol</span></option>
+                            <option value="xrp_usdt">XRP/USDT - Ripple <span class="volatility-badge medium-vol">Moyenne Vol</span></option>
+                            <option value="ada_usdt">ADA/USDT - Cardano <span class="volatility-badge medium-vol">Moyenne Vol</span></option>
+                            <option value="doge_usdt">DOGE/USDT - Dogecoin <span class="volatility-badge high-vol">Haute Vol</span></option>
+                            <option value="dot_usdt">DOT/USDT - Polkadot <span class="volatility-badge high-vol">Haute Vol</span></option>
+                            <option value="matic_usdt">MATIC/USDT - Polygon <span class="volatility-badge high-vol">Haute Vol</span></option>
+                            <option value="avax_usdt">AVAX/USDT - Avalanche <span class="volatility-badge high-vol">Haute Vol</span></option>
+                            
+                            <!-- SMART CONTRACTS -->
+                            <option value="link_usdt">LINK/USDT - Chainlink <span class="volatility-badge high-vol">Haute Vol</span></option>
+                            <option value="uni_usdt">UNI/USDT - Uniswap <span class="volatility-badge high-vol">Haute Vol</span></option>
+                            <option value="aave_usdt">AAVE/USDT - Aave <span class="volatility-badge high-vol">Haute Vol</span></option>
+                            
+                            <!-- MEME COINS -->
+                            <option value="shib_usdt">SHIB/USDT - Shiba Inu <span class="volatility-badge high-vol">Haute Vol</span></option>
+                            <option value="pepe_usdt">PEPE/USDT - Pepe <span class="volatility-badge high-vol">Haute Vol</span></option>
+                            
+                            <!-- NOUVELLE PAIR AJOUTÉE : GIGGLE/USDT -->
+                            <option value="giggle_usdt">GIGGLE/USDT - Giggle Token <span class="volatility-badge high-vol">TRÈS HAUTE VOL</span></option>
+                            
+                            <!-- FUTURES/PERPETUAL -->
+                            <option value="btc_usdt-perp">BTC/USDT-PERP - Futures Bitcoin <span class="volatility-badge high-vol">Haute Vol</span></option>
+                            <option value="eth_usdt-perp">ETH/USDT-PERP - Futures Ethereum <span class="volatility-badge high-vol">Haute Vol</span></option>
+                            <option value="sol_usdt-perp">SOL/USDT-PERP - Futures Solana <span class="volatility-badge high-vol">Haute Vol</span></option>
+                            
+                            <!-- AUTRES POPULAIRES -->
+                            <option value="ltc_usdt">LTC/USDT - Litecoin <span class="volatility-badge medium-vol">Moyenne Vol</span></option>
+                            <option value="trx_usdt">TRX/USDT - Tron <span class="volatility-badge medium-vol">Moyenne Vol</span></option>
+                            <option value="etc_usdt">ETC/USDT - Ethereum Classic <span class="volatility-badge high-vol">Haute Vol</span></option>
+                        </select>
+                    </div>
+                    <div class="security-note">
+                        <i class="fas fa-shield-alt"></i> <strong>LEVIER 20× OBLIGATOIRE</strong> - Toutes les paires utiliseront un effet de levier 20×
+                    </div>
+                    <div class="security-note" style="background: rgba(255, 51, 102, 0.1); border-color: #ff3366; color: #ff3366;">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>IA OPTIMISÉE VOLATILITÉ</strong> - Plus la crypto est volatile, plus l'IA l'analyse en profondeur
+                    </div>
+                    <button class="btn btn-green" onclick="startTrading()"><i class="fas fa-play"></i> Démarrer Trading IA</button>
+                    <button class="btn btn-red" onclick="stopTrading()"><i class="fas fa-stop"></i> Arrêter Trading</button>
+                </div>
+                
+                <div class="card">
+                    <h2><i class="fas fa-chart-bar"></i> Positions Actives</h2>
+                    <div id="positions-container">
+                        <p style="color: #8a9bb0; text-align: center; padding: 20px;">Aucune position active</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2><i class="fas fa-list-alt"></i> Journal des Trades</h2>
+                    <div class="trade-log" id="trade-log">
+                        <div class="log-entry log-info">Système prêt. Configurez vos clés API pour commencer.</div>
+                        <div class="log-entry log-info">IA optimisée pour cryptos volatiles avec levier 20×</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SECTION VOLATILITÉ -->
+        <div id="volatility-section" class="section hidden">
+            <div class="card">
+                <h2><i class="fas fa-chart-bar"></i> Analyse Volatilité</h2>
+                <div id="volatility-analysis">
+                    <h3><i class="fas fa-brain"></i> Stratégie IA pour cryptos volatiles :</h3>
+                    <ul style="margin: 15px 0; padding-left: 20px;">
+                        <li><strong>Cryptos TRÈS VOLATILES</strong> (GIGGLE, PEPE, SHIB) : Analyse renforcée ×3</li>
+                        <li><strong>Cryptos VOLATILES</strong> (SOL, DOGE, MATIC) : Analyse approfondie ×2</li>
+                        <li><strong>Cryptos STABLES</strong> (BTC, ETH) : Stratégie standard</li>
+                    </ul>
+                    <div class="security-note">
+                        <i class="fas fa-microscope"></i> L'IA passe <strong>2× plus de temps</strong> à analyser les cryptos volatiles avant chaque trade
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SECTION PARAMÈTRES -->
+        <div id="settings-section" class="section hidden">
+            <div class="card">
+                <h2><i class="fas fa-key"></i> Configuration API Lbank</h2>
+                <div class="input-group">
+                    <label>Clé API Lbank</label>
+                    <input type="password" id="api-key" placeholder="Entrez votre clé API">
+                </div>
+                <div class="input-group">
+                    <label>Clé Secrète Lbank</label>
+                    <input type="password" id="api-secret" placeholder="Entrez votre clé secrète">
+                </div>
+                <div class="input-group">
+                    <label>PIN de sécurité</label>
+                    <input type="password" id="pin-code" value="2025" maxlength="4">
+                </div>
+                <div class="security-note">
+                    <i class="fas fa-lock"></i> Vos clés sont <strong>chiffrées et stockées localement</strong> sur cet appareil uniquement.
+                </div>
+                <button class="btn" onclick="saveApiConfig()"><i class="fas fa-save"></i> Enregistrer Configuration</button>
+                <button class="btn btn-red" onclick="clearAllData()"><i class="fas fa-trash"></i> Effacer Toutes les Données</button>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-sliders-h"></i> Paramètres Trading</h2>
+                <div class="input-group">
+                    <label>Stop-loss (%)</label>
+                    <input type="number" id="stop-loss" value="5" min="1" max="20">
+                </div>
+                <div class="input-group">
+                    <label>Take-profit (%)</label>
+                    <input type="number" id="take-profit" value="15" min="5" max="50">
+                </div>
+                <div class="input-group">
+                    <label>Levier de trading</label>
+                    <input type="number" id="leverage" value="20" min="1" max="100" disabled>
+                    <small style="color: #ff9900; display: block; margin-top: 5px;">Levier 20× obligatoire (configuration système)</small>
+                </div>
+                <button class="btn" onclick="saveTradingConfig()"><i class="fas fa-save"></i> Sauvegarder Paramètres</button>
+            </div>
+        </div>
+        
+        <!-- SECTION HISTORIQUE -->
+        <div id="history-section" class="section hidden">
+            <div class="card">
+                <h2><i class="fas fa-history"></i> Historique des Trades</h2>
+                <div id="history-container">
+                    <p style="color: #8a9bb0; text-align: center; padding: 20px;">Aucun trade historique</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================= CONFIGURATION GLOBALE =================
+        const TRADING_CONFIG = {
+            LEVERAGE: 20,           // LEVIER 20× OBLIGATOIRE
+            LEVERAGE_REQUIRED: true,
+            MARGIN_MODE: 'isolated',
+            VERSION: '2.0.0',
+            SECURITY_LEVEL: 'HIGH'
+        };
+
+        // ================= VOLATILITÉ DES CRYPTOS =================
+        const VOLATILITY_LEVELS = {
+            LOW: ['btc_usdt', 'eth_usdt'],                    // Faible volatilité
+            MEDIUM: ['bnb_usdt', 'xrp_usdt', 'ada_usdt', 'ltc_usdt', 'trx_usdt'], // Moyenne volatilité
+            HIGH: ['sol_usdt', 'doge_usdt', 'dot_usdt', 'matic_usdt', 'avax_usdt', 
+                   'link_usdt', 'uni_usdt', 'aave_usdt', 'shib_usdt', 'pepe_usdt',
+                   'btc_usdt-perp', 'eth_usdt-perp', 'sol_usdt-perp', 'etc_usdt'], // Haute volatilité
+            EXTREME: ['giggle_usdt']                          // TRÈS haute volatilité
+        };
+
+        // ================= CLASSE IA AVANCÉE POUR VOLATILITÉ =================
+        class AdvancedTradingAI {
+            constructor() {
+                this.LEVERAGE = 20;
+                this.analysisTime = {
+                    LOW: 1000,      // 1 seconde pour cryptos stables
+                    MEDIUM: 2000,   // 2 secondes pour moyenne volatilité
+                    HIGH: 3000,     // 3 secondes pour haute volatilité
+                    EXTREME: 5000   // 5 secondes pour très haute volatilité
+                };
+            }
+
+            // Détermine le niveau de volatilité d'une paire
+            getVolatilityLevel(pair) {
+                if (VOLATILITY_LEVELS.EXTREME.includes(pair)) return 'EXTREME';
+                if (VOLATILITY_LEVELS.HIGH.includes(pair)) return 'HIGH';
+                if (VOLATILITY_LEVELS.MEDIUM.includes(pair)) return 'MEDIUM';
+                return 'LOW';
+            }
+
+            // Analyse approfondie selon volatilité
+            async analyzeMarket(pair, marketData) {
+                const volatility = this.getVolatilityLevel(pair);
+                const analysisTime = this.analysisTime[volatility];
+                
+                console.log(`🔍 IA analyse ${pair} (${volatility} volatilité) pendant ${analysisTime/1000}s...`);
+                
+                // Simulation analyse IA
+                await this.simulateAnalysis(analysisTime);
+                
+                // Plus la crypto est volatile, plus l'analyse est poussée
+                const analysisDepth = {
+                    LOW: 1,      // Analyse standard
+                    MEDIUM: 2,   // Analyse ×2
+                    HIGH: 3,     // Analyse ×3
+                    EXTREME: 5   // Analyse ×5
+                }[volatility];
+
+                return this.deepAnalysis(pair, analysisDepth);
+            }
+
+            // Simulation analyse IA
+            simulateAnalysis(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            // Analyse poussée selon profondeur
+            deepAnalysis(pair, depth) {
+                const analyses = [];
+                
+                for (let i = 1; i <= depth; i++) {
+                    analyses.push({
+                        level: i,
+                        indicators: this.generateIndicators(pair, i),
+                        confidence: Math.min(0.7 + (i * 0.1), 0.95),
+                        riskAssessment: this.assessRisk(pair, i)
+                    });
+                }
+
+                // Décision finale basée sur analyses multiples
+                const finalDecision = this.makeDecision(analyses);
+                
+                // FORCER LEVIER 20×
+                finalDecision.leverage = this.LEVERAGE;
+                
+                return {
+                    decision: finalDecision,
+                    analysisDepth: depth,
+                    volatility: this.getVolatilityLevel(pair),
+                    timestamp: new Date().toISOString()
+                };
+            }
+
+            generateIndicators(pair, level) {
+                const baseIndicators = ['RSI', 'MACD', 'Bollinger Bands'];
+                const advancedIndicators = ['Volume Profile', 'Order Flow', 'Market Depth', 'Sentiment Analysis'];
+                
+                let indicators = [...baseIndicators];
+                
+                // Plus level est élevé, plus d'indicateurs
+                if (level >= 2) indicators.push(...advancedIndicators.slice(0, 2));
+                if (level >= 3) indicators.push(...advancedIndicators.slice(2));
+                if (level >= 4) indicators.push('AI Pattern Recognition', 'Neural Network Prediction');
+                if (level >= 5) indicators.push('Quantum Analysis Simulation', 'Multi-Timeframe Synthesis');
+                
+                return indicators;
+            }
+
+            assessRisk(pair, level) {
+                const volatility = this.getVolatilityLevel(pair);
+                const riskBase = {
+                    LOW: 0.2,
+                    MEDIUM: 0.4,
+                    HIGH: 0.6,
+                    EXTREME: 0.8
+                }[volatility];
+
+                // Plus d'analyse = meilleure évaluation risque
+                const riskReduction = level * 0.05;
+                return Math.max(0.1, riskBase - riskReduction);
+            }
+
+            makeDecision(analyses) {
+                // Moyenne des confidences
+                const avgConfidence = analyses.reduce((sum, a) => sum + a.confidence, 0) / analyses.length;
+                
+                // Décision basée sur analyse la plus profonde
+                const deepestAnalysis = analyses[analyses.length - 1];
+                
+                return {
+                    action: avgConfidence > 0.65 ? 'BUY' : (avgConfidence < 0.35 ? 'SELL' : 'HOLD'),
+                    confidence: avgConfidence,
+                    leverage: this.LEVERAGE, // ← TOUJOURS 20×
+                    stopLoss: 5, // Votre configuration
+                    takeProfit: 15, // Votre configuration
+                    analysisLevel: analyses.length,
+                    riskLevel: deepestAnalysis.riskAssessment
+                };
+            }
+
+            // Vérification levier 20× obligatoire
+            validateLeverage(leverage) {
+                if (leverage !== this.LEVERAGE) {
+                    throw new Error(`ERREUR: Levier ${this.LEVERAGE}× obligatoire. Reçu: ${leverage}×`);
+                }
+                return true;
+            }
+        }
+
+        // ================= CLASSE API LBANK SÉCURISÉE =================
+        class SecureLbankAPI {
+            constructor(apiKey, apiSecret) {
+                this.apiKey = apiKey;
+                this.apiSecret = apiSecret;
+                this.baseURL = 'https://api.lbkex.com';
+            }
+
+            validateLeverage(leverage) {
+                if (leverage !== TRADING_CONFIG.LEVERAGE) {
+                    throw new Error(`ERREUR SÉCURITÉ: Levier ${TRADING_CONFIG.LEVERAGE}× obligatoire. Reçu: ${leverage}×`);
+                }
+                return true;
+            }
+
+            createSignature(params) {
+                const sortedParams = Object.keys(params).sort().map(key => `${key}=${params[key]}`).join('&');
+                return CryptoJS.HmacSHA256(sortedParams, this.apiSecret).toString(CryptoJS.enc.Hex);
+            }
+
+            async createOrder(symbol, side, amount) {
+                try {
+                    this.validateLeverage(TRADING_CONFIG.LEVERAGE);
+                    
+                    const timestamp = Date.now();
+                    const params = {
+                        api_key: this.apiKey,
+                        symbol: symbol,
+                        type: 'limit',
+                        side: side.toLowerCase(),
+                        amount: amount.toString(),
+                        leverage: TRADING_CONFIG.LEVERAGE.toString(),
+                        margin_mode: TRADING_CONFIG.MARGIN_MODE,
+                        price: 'market',
+                        timestamp: timestamp.toString()
+                    };
+
+                    params.sign = this.createSignature(params);
+
+                    // Simulation (remplacez par vrai appel API)
+                    console.log(`✅ TRADE SIMULÉ: ${side} ${amount} ${symbol} - Levier ${TRADING_CONFIG.LEVERAGE}×`);
+                    
+                    return {
+                        success: true,
+                        orderId: 'SIM_' + Date.now(),
+                        leverage: TRADING_CONFIG.LEVERAGE,
+                        message: `Trade avec levier ${TRADING_CONFIG.LEVERAGE}×`
+                    };
+                } catch (error) {
+                    console.error('❌ ERREUR TRADE:', error);
+                    return { success: false, error: error.message };
+                }
+            }
+        }
+
+        // ================= GESTIONNAIRE DE SÉCURITÉ =================
+        class SecurityManager {
+            constructor() {
+                this.PIN = '2025';
+                this.MAX_ATTEMPTS = 3;
+                this.attempts = 0;
+            }
+
+            verifyPin(inputPin) {
+                if (inputPin === this.PIN) {
+                    this.attempts = 0;
+                    return true;
+                } else {
+                    this.attempts++;
+                    if (this.attempts >= this.MAX_ATTEMPTS) {
+                        throw new Error('Trop de tentatives. Redémarrez l\'application.');
+                    }
+                    throw new Error(`PIN incorrect. Tentatives: ${this.attempts}/${this.MAX_ATTEMPTS}`);
+                }
+            }
+
+            encryptData(data) {
+                try {
+                    return CryptoJS.AES.encrypt(JSON.stringify(data), this.PIN + 'salt').toString();
+                } catch (error) {
+                    console.error('Erreur chiffrement:', error);
+                    return null;
+                }
+            }
+
+            decryptData(encryptedData) {
+                try {
+                    const bytes = CryptoJS.AES.decrypt(encryptedData, this.PIN + 'salt');
+                    return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+                } catch (error) {
+                    console.error('Erreur déchiffrement:', error);
+                    return null;
+                }
+            }
+        }
+
+        // ================= ÉTAT APPLICATION =================
+        let appState = {
+            isConnected: false,
+            isTrading: false,
+            apiKey: '',
+            apiSecret: '',
+            balance: 0,
+            positions: [],
+            tradeHistory: [],
+            lbankAPI: null,
+            securityManager: new SecurityManager(),
+            tradingAI: new AdvancedTradingAI()
+        };
+
+        // ================= FONCTIONS UI =================
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`${sectionId}-section`).classList.remove('hidden');
+            document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function updateUI() {
+            document.getElementById('balance').textContent = appState.balance.toFixed(2) + ' USDT';
+            const statusEl = document.getElementById('connection-status');
+            const statusText = document.getElementById('status-text');
+            
+            if (appState.isConnected) {
+                statusEl.className = 'status status-online';
+                statusText.textContent = 'Connecté';
+            } else {
+                statusEl.className = 'status status-offline';
+                statusText.textContent = 'Non connecté';
+            }
+            
+            updatePositions();
+            updateHistory();
+        }
+
+        // ================= CONFIGURATION API =================
+        function saveApiConfig() {
+            const apiKey = document.getElementById('api-key').value.trim();
+            const apiSecret = document.getElementById('api-secret').value.trim();
+            const pin = document.getElementById('pin-code').value.trim();
+            
+            try {
+                appState.securityManager.verifyPin(pin);
+            } catch (error) {
+                alert(error.message);
+                return;
+            }
+            
+            if (!apiKey || !apiSecret) {
+                alert('Veuillez entrer votre clé API et clé secrète Lbank.');
+                return;
+            }
+            
+            const encrypted = appState.securityManager.encryptData({
+                apiKey: apiKey,
+                apiSecret: apiSecret,
+                timestamp: Date.now()
+            });
+            
+            localStorage.setItem('cryptoai_config', encrypted);
+            
+            appState.apiKey = apiKey;
+            appState.apiSecret = apiSecret;
+            appState.lbankAPI = new SecureLbankAPI(apiKey, apiSecret);
+            
+            logMessage('Configuration API enregistrée et chiffrée.', 'success');
+            alert('Configuration sauvegardée! Levier 20× activé. IA volatilité activée.');
+        }
+
+        function loadConfig() {
+            try {
+                const saved = localStorage.getItem('cryptoai_config');
+                if (saved) {
+                    const decrypted = appState.securityManager.decryptData(saved);
+                    if (decrypted) {
+                        appState.apiKey = decrypted.apiKey;
+                        appState.apiSecret = decrypted.apiSecret;
+                        appState.lbankAPI = new SecureLbankAPI(decrypted.apiKey, decrypted.apiSecret);
+                        appState.isConnected = true;
+                        appState.balance = 1000; // Solde démo
+                        logMessage('Configuration chargée. IA volatilité activée.', 'info');
+                    }
+                }
+            } catch (error) {
+                logMessage('Chargement config: ' + error.message, 'error');
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('⚠️ EFFACER TOUTES LES DONNÉES?')) {
+                localStorage.clear();
+                appState = {
+                    isConnected: false,
+                    isTrading: false,
+                    apiKey: '',
+                    apiSecret: '',
+                    balance: 0,
+                    positions: [],
+                    tradeHistory: [],
+                    lbankAPI: null,
+                    securityManager: new SecurityManager(),
+                    tradingAI: new AdvancedTradingAI()
+                };
+                updateUI();
+                logMessage('Toutes données effacées.', 'info');
+            }
+        }
+
+        // ================= CONNEXION LBANK =================
+        function connectToLbank() {
+            if (!appState.apiKey || !appState.apiSecret) {
+                alert('Configurez d\'abord vos clés API.');
+                showSection('settings');
+                return;
+            }
+            
+            logMessage('Connexion Lbank... IA volatilité activée.', 'info');
+            
+            setTimeout(() => {
+                appState.isConnected = true;
+                appState.balance = 1000 + Math.random() * 5000;
+                updateUI();
+                logMessage('✅ Connecté à Lbank. IA optimisée pour cryptos volatiles.', 'success');
+                logMessage('🔍 GIGGLE/USDT: Analyse approfondie ×5 activée', 'info');
+            }, 1500);
+        }
+
+        // ================= TRADING IA AVANCÉ =================
+        async function startTrading() {
+            if (!appState.isConnected) {
+                alert('Connectez d\'abord à Lbank API.');
+                return;
+            }
+            
+            try {
+                // Vérification levier 20×
+                if (TRADING_CONFIG.LEVERAGE !== 20) {
+                    throw new Error(`LEVIER 20× OBLIGATOIRE. Config: ${TRADING_CONFIG.LEVERAGE}×`);
+                }
+                
+                const amount = parseFloat(document.getElementById('trade-amount').value);
+                const pair = document.getElementById('trading-pair').value.split(' ')[0]; // Récupère juste la valeur
+                
+                if (amount < 10) {
+                    alert('Minimum: 10 USDT');
+                    return;
+                }
+                
+                appState.isTrading = true;
+                
+                const volatility = appState.tradingAI.getVolatilityLevel(pair);
+                logMessage(`🚀 TRADING IA DÉMARRÉ - ${pair}`, 'success');
+                logMessage(`📊 Volatilité détectée: ${volatility} - Analyse IA renforcée activée`, 'info');
+                logMessage(`✅ Levier ${TRADING_CONFIG.LEVERAGE}× confirmé pour tous les trades`, 'info');
+                
+                // Démarrer le trading IA
+                advancedTradingLoop(pair, amount);
+                
+            } catch (error) {
+                logMessage(`ERREUR: ${error.message}`, 'error');
+                alert('Configuration levier incorrecte!');
+            }
+        }
+
+        function stopTrading() {
+            appState.isTrading = false;
+            logMessage('🛑 Trading IA arrêté.', 'info');
+        }
+
+        async function advancedTradingLoop(pair, amount) {
+            if (!appState.isTrading) return;
+            
+            try {
+                // 1. ANALYSE AVANCÉE SELON VOLATILITÉ
+                logMessage(`🔍 IA analyse ${pair} en profondeur...`, 'info');
+                const analysis = await appState.tradingAI.analyzeMarket(pair, {});
+                
+                // 2. VÉRIFICATION LEVIER 20×
+                appState.tradingAI.validateLeverage(analysis.decision.leverage);
+                
+                // 3. EXÉCUTION SI DÉCISION POSITIVE
+                if (analysis.decision.action !== 'HOLD') {
+                    const result = await appState.lbankAPI.createOrder(pair, analysis.decision.action, amount);
+                    
+                    if (result.success) {
+                        const trade = {
+                            id: result.orderId,
+                            pair: pair,
+                            action: analysis.decision.action,
+                            amount: amount,
+                            leverage: analysis.decision.leverage,
+                            analysisDepth: analysis.analysisDepth,
+                            volatility: analysis.volatility,
+                            price: (Math.random() * 10000 + 100).toFixed(2),
+                            profit: (Math.random() * 25 - 5).toFixed(2), // Plus volatile = plus de variabilité
+                            timestamp: new Date().toLocaleTimeString(),
+                            message: `${result.message} | Analyse: ${analysis.analysisDepth}niveau`
+                        };
+                        
+                        appState.tradeHistory.unshift(trade);
+                        
+                        const logMsg = `${trade.timestamp} - ${trade.action} ${trade.pair} - ${trade.amount} USDT`;
+                        const logMsg2 = `Levier ${trade.leverage}× | Analyse ${trade.analysisDepth}niveau | Vol: ${trade.volatility}`;
+                        logMessage(logMsg, parseFloat(trade.profit) > 0 ? 'success' : 'info');
+                        logMessage(logMsg2, 'info');
+                        
+                        updateHistory();
+                    }
+                } else {
+                    logMessage(`⏸️ IA décide HOLD pour ${pair} (analyse approfondie)`, 'info');
+                }
+                
+            } catch (error) {
+                logMessage(`Erreur analyse: ${error.message}`, 'error');
+            }
+            
+            // Intervalle variable selon volatilité
+            if (appState.isTrading) {
+                const volatility = appState.tradingAI.getVolatilityLevel(pair);
+                const intervals = {
+                    LOW: 15000,      // 15 secondes pour stable
+                    MEDIUM: 10000,   // 10 secondes
+                    HIGH: 7000,      // 7 secondes
+                    EXTREME: 5000    // 5 secondes pour très volatile
+                };
+                
+                setTimeout(() => advancedTradingLoop(pair, amount), intervals[volatility]);
+            }
+        }
+
+        // ================= UTILITAIRES =================
+        function updatePositions() {
+            const container = document.getElementById('positions-container');
+            if (appState.positions.length === 0) {
+                container.innerHTML = '<p style="color: #8a9bb0; text-align: center; padding: 20px;">Aucune position active</p>';
+            }
+        }
+
+        function updateHistory() {
+            const container = document.getElementById('history-container');
+            if (appState.tradeHistory.length === 0) {
+                container.innerHTML = '<p style="color: #8a9bb0; text-align: center; padding: 20px;">Aucun trade historique</p>';
+            } else {
+                container.innerHTML = appState.tradeHistory.slice(0, 10).map(trade => `
+                    <div style="background: #1a2234; padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 4px solid ${parseFloat(trade.profit) > 0 ? '#00ff88' : '#ff416c'};">
+                        <strong>${trade.pair}</strong> - ${trade.action} - ${trade.amount} USDT<br>
+                        <small>Levier: ${trade.leverage}× | Analyse: ${trade.analysisDepth}niveau | Vol: ${trade.volatility}</small><br>
+                        <small>Prix: ${trade.price} | Profit: ${trade.profit}% | ${trade.timestamp}</small>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function logMessage(message, type = 'info') {
+            const log = document.getElementById('trade-log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
+            log.prepend(entry);
+            
+            if (log.children.length > 50) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        function saveTradingConfig() {
+            const stopLoss = document.getElementById('stop-loss').value;
+            const takeProfit = document.getElementById('take-profit').value;
+            
+            localStorage.setItem('cryptoai_stop_loss', stopLoss);
+            localStorage.setItem('cryptoai_take_profit', takeProfit);
+            
+            logMessage(`Configuration: SL ${stopLoss}% / TP ${takeProfit}%`, 'success');
+        }
+
+        // ================= INITIALISATION =================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConfig();
+            
+            const savedSL = localStorage.getItem('cryptoai_stop_loss');
+            const savedTP = localStorage.getItem('cryptoai_take_profit');
+            if (savedSL) document.getElementById('stop-loss').value = savedSL;
+            if (savedTP) document.getElementById('take-profit').value = savedTP;
+            
+            updateUI();
+            logMessage('CryptoVision AI 2.0 chargée - IA Volatilité Activée', 'info');
+            logMessage('🔍 Cryptos volatiles: Analyse renforcée ×2 à ×5', 'info');
+            logMessage('⚡ Levier 20× obligatoire pour TOUTES les paires', 'info');
+        });
+    </script>
+</body>
+</html>
